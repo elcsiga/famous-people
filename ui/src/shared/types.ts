@@ -1,13 +1,8 @@
 import { WebsocketMethod } from "express-ws";
-
-
-export interface GameData {
-    //TODO
-}
 export interface Player {
     name: string;
-    color: number;
-    gameData: GameData;
+    sheets: string[];
+    ord: number;
 };
 
 export interface PlayerReport extends Player {
@@ -20,7 +15,7 @@ export interface GameClient {
     player?: Player
 };
 
-export type GameStatus = 'GATHERING' | 'GAME';
+export type GameStatus = 'GATHERING' | 'GROUPING' | 'QUIZ' | 'RESULTS';
 
 // inner status
 export interface GameState {
@@ -41,8 +36,16 @@ export interface GameReport {
 // commands
 
 export interface Command {
-    command: 'connect' | 'apply' | 'quit' | 'quitNotConnectedPlayers' | 'start' | 'stop';
+    command: 'goToGathering' | 'connect' | 'apply' | 'quit' | 'quitNotConnectedPlayers' | 'sendSheets'
+     | 'goToGrouping' | 'shuffleGroups' | 'clearGroups'
+     | 'goToQuiz' | 'startRound' | 'solve' | 'skip' | 'endRound'
+     | 'goToResults';
 }
+
+export interface GoToGatheringCommand extends Command {
+    command: 'goToGathering';
+}
+
 export interface ConnectCommand extends Command {
     command: 'connect';
     clientId: string;
@@ -56,14 +59,48 @@ export interface ApplyCommand extends Command {
 export interface QuitCommand extends Command {
     command: 'quit';
 }
+
 export interface QuitNotConnectedPlayersCommand extends Command {
     command: 'quitNotConnectedPlayers';
 }
 
-export interface StartCommand extends Command {
-    command: 'start';
+export interface SendSheetsCommand extends Command {
+    command: 'sendSheets';
+    sheets: string[];
 }
 
-export interface StopCommand extends Command {
-    command: 'stop';
+export interface GoToGroupingCommand extends Command {
+    command: 'goToGrouping';
+}
+
+export interface ShuffleGroupsCommand extends Command {
+    command: 'shuffleGroups';
+}
+
+export interface ClearGroupsCommand extends Command {
+    command: 'clearGroups';
+}
+
+export interface GoToQuizCommand extends Command {
+    command: 'goToQuiz';
+}
+
+export interface StartRoundCommand extends Command {
+    command: 'startRound';
+}
+
+export interface SolveCommand extends Command {
+    command: 'solve';
+}
+
+export interface SkipCommand extends Command {
+    command: 'skip';
+}
+
+export interface EndRoundCommand extends Command {
+    command: 'endRound';
+}
+
+export interface GoToResultsCommand extends Command {
+    command: 'goToResults';
 }

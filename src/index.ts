@@ -5,8 +5,9 @@ import expressWs from 'express-ws';
 
 import { v4 as uuid } from 'uuid';
 
-import { ApplyCommand, Command, ConnectCommand, GameReport, GameState } from '../ui/src/shared/types';
+import { ApplyCommand, Command, ConnectCommand, GameReport, GameState, Player, SendSheetsCommand } from '../ui/src/shared/types';
 import { gameConfig } from '../ui/src/shared/config';
+import { areGroupsSetUp, areSheetsReady, clearGroups, shuffleGroups } from '../ui/src/shared/utilities';
 
 const { app, getWss } = expressWs(express());
 const port = process.env.PORT || 3000;
@@ -35,9 +36,11 @@ app.ws('/ws', (ws, req) => {
             if (myClient && clientWs.readyState === WebSocket.OPEN) {
                 const playerClients = clients.filter((client) => client.player);
                 const myIndex = playerClients.findIndex((client) => client.ws === clientWs);
-                const players = playerClients.map((client) => ({
+                const players = playerClients.map((client, index) => ({
                     ...client.player,
-                    connected: !!client.ws
+                    connected: !!client.ws,
+                    // encode famousPeople of other players
+                    sheets: index === myIndex ? client.player.sheets : client.player.sheets.map(() => '***')
                 }));
                 const numOfClients = clients.length;
                 const myClientId = myClient.clientId;
@@ -52,6 +55,11 @@ app.ws('/ws', (ws, req) => {
     ws.on('message', (message: string) => {
         const data: Command = JSON.parse(message);
         switch (data.command) {
+            case 'goToGathering': {
+                console.log('Go to Gathering');
+                gameState.status = 'GATHERING';
+                break;
+            }
             case 'connect': {
                 const connectCommend = data as ConnectCommand;
                 if (connectCommend.clientId) {
@@ -69,19 +77,13 @@ app.ws('/ws', (ws, req) => {
                 break;
             }
             case 'apply': {
-                const applyCommand = data as ApplyCommand;
-                const { name } = applyCommand;
-
-                // find an unused color index
-                let color: number;
-                do {
-                    color = Math.floor(Math.random() * 4);
-                } while (gameState.clients.filter((c) => c.player).find((c) => c.player.color === color));
-
                 const client = getClient();
                 if (gameState.status === 'GATHERING' && client && !client.player) {
-                    client.player = { name, color, gameData: null };
+                    const applyCommand = data as ApplyCommand;
+                    const { name } = applyCommand;
+                    client.player = { name, sheets: [], ord: -1 };
                     console.log('Applied: ', client.player);
+                    clearGroups(getPlayers());
                 }
                 break;
             }
@@ -90,36 +92,79 @@ app.ws('/ws', (ws, req) => {
                 if (gameState.status === 'GATHERING' && client && client.player) {
                     console.log('Quit: ', client.player.name);
                     client.player = null;
+                    clearGroups(getPlayers());
                 }
                 break;
             }
             case 'quitNotConnectedPlayers': {
                 if (gameState.status === 'GATHERING') {
+                    let found = false;
                     gameState.clients
                         .filter((client) => client.player && !client.ws)
                         .forEach((client) => {
                             console.log('Force quit: ', client.player.name);
                             client.player = null;
+                            found = true;
                         });
+
+                    if (found) {
+                        clearGroups(getPlayers());
+                    }
                 }
                 break;
             }
-            case 'start': {
-                const numOfPlayers = getPlayers().length;
+            case 'sendSheets': {
+                const client = getClient();
+                if (gameState.status === 'GATHERING' && client && client.player) {
+                    const sendSheetsCommand = data as SendSheetsCommand;
+                    const { sheets } = sendSheetsCommand;
+                    client.player.sheets = sheets;
+                    console.log('Sheets added: ', client.player.sheets);
+                }
+                break;
+            }
+            case 'goToGrouping': {
+                const players = getPlayers();
                 if (gameState.status === 'GATHERING'
-                    && numOfPlayers >= gameConfig.numOfPlayers.min
-                    && numOfPlayers <= gameConfig.numOfPlayers.max) {
-                    console.log('Start game');
-                    getPlayers().forEach(player => { player.gameData = {} });
-                    gameState.status = 'GAME';
+                    && players.length >= gameConfig.numOfPlayers.min
+                    && players.length <= gameConfig.numOfPlayers.max
+                    && players.every((p) => areSheetsReady(p))
+                ) {
+                    console.log('Start grouping');
+                    gameState.status = 'GROUPING';
                 }
                 break;
             }
-            case 'stop': {
-                if (gameState.status !== 'GATHERING') {
-                    getPlayers().forEach(player => { player.gameData = null });
-                    console.log('Stop game');
-                    gameState.status = 'GATHERING';
+            case 'shuffleGroups': {
+                if (gameState.status === 'GROUPING') {
+                    const players = getPlayers();
+                    shuffleGroups(players);
+                    console.log('Shuffle groups');
+                }
+                break;
+            }
+            case 'clearGroups': {
+                if (gameState.status === 'GROUPING') {
+                    const players = getPlayers();
+                    clearGroups(players);
+                    console.log('Clear groups');
+                }
+                break;
+            }
+            case 'goToQuiz': {
+                const players = getPlayers();
+                if (gameState.status === 'GROUPING'
+                    && players.every((p) => areGroupsSetUp(p))
+                ) {
+                    console.log('Start quiz');
+                    gameState.status = 'QUIZ';
+                }
+                break;
+            }
+            case 'goToResults': {
+                if (gameState.status === 'QUIZ') {
+                    console.log('Results');
+                    gameState.status = 'RESULTS';
                 }
                 break;
             }

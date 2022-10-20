@@ -3,8 +3,17 @@ export const gameConfig = {
         min: 2,
         max: 8,
     },
-    numOfNamesPerPlayer: 5,
-    timeForQuiz: 30
+    sheets: {
+        count: 5,
+        minLength: 3
+    },
+    groups: {
+        count: 2
+    },
+    quiz: {
+        roundTime: 30,
+        maxNumOfSkips: 1
+    }
 }
 
 export const colors: string[] = ['green', 'blue', 'orange', 'red', 'black', 'white', 'yellow', 'purple'];

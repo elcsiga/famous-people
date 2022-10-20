@@ -1,15 +1,17 @@
 <script lang="ts">
   import type {
     ApplyCommand,
-    StartCommand,
+    GoToGroupingCommand,
     QuitCommand,
     QuitNotConnectedPlayersCommand,
   } from "../shared/types";
   import { gameConfig } from "../shared/config";
-  import IoIosAddCircle from "svelte-icons/io/IoIosAddCircle.svelte";
   import Pawn from "../compnents/Pawn.svelte";
   import QrCode from "../compnents/QrCode.svelte";
   import { gameReport, send, me } from "../game/state";
+  import WriteSheets from "../compnents/WriteSheets.svelte";
+  import { areSheetsReady, numOfValidSheets } from "../shared/utilities";
+
   const { min, max } = gameConfig.numOfPlayers;
 
   function apply() {
@@ -33,9 +35,9 @@
     });
   }
 
-  function start() {
-    send<StartCommand>({
-      command: "start",
+  function startGrouping() {
+    send<GoToGroupingCommand>({
+      command: "goToGrouping",
     });
   }
 
@@ -48,28 +50,47 @@
 
 <h1>Gyülekező</h1>
 
+<section class="qr">
+  <QrCode text={window.location.href} />
+</section>
+
 <section>
   {#each $gameReport.players as player}
     <Pawn {player} />
   {/each}
+</section>
+
+<section>
+  {#if $me}
+    <button class="link" on:click={quit}> Mégsem játszom</button>
+  {/if}
+</section>
+
+{#if $me}
+  <section>
+    <WriteSheets />
+  </section>
+{/if}
+
+<section>
+  <p>A játékot {min}-{max} játékos játszhatja.</p>
 
   {#if !$me && $gameReport.players.length < max}
-    <div class="add bumpy" on:click={apply}>
-      <IoIosAddCircle />
-    </div>
+    <button on:click={apply}> Játszom én is! </button>
   {/if}
 </section>
 
 <section>
-  <p>A játékot {min}-{max} játékos játszhatja.</p>
-</section>
+  <p>
+    Eddig bedobott kártyák száma:
+    {$gameReport.players.reduce((n, player) => n + numOfValidSheets(player), 0)}
+  </p>
 
-<section>
   {#if $gameReport.players.length >= min && $gameReport.players.length <= max}
-    {#if $gameReport.players.every((player) => player.connected)}
+    {#if $gameReport.players.every((player) => player.connected && areSheetsReady(player))}
       <p>Itt van mindenki?</p>
       <p>
-        <button on:click={start}> Kezdjük! </button>
+        <button on:click={startGrouping}> Tobább a csoportokhoz! </button>
       </p>
     {/if}
   {/if}
@@ -85,29 +106,3 @@
     </p>
   {/if}
 </section>
-
-<section>
-  {#if $me}
-    <button class="link" on:click={quit}> Mégsem játszom</button>
-  {/if}
-</section>
-
-<section class="qr">
-  <QrCode text="{window.location.href}"/>
-</section>
-
-<style>
-  .add {
-    box-sizing: border-box;
-    width: 5em;
-    height: 7em;
-    margin: 0.5em;
-    border-radius: 0.5em;
-    border: 0.2rem solid white;
-    background: linear-gradient(to top, lightgrey, white, lightgrey);
-
-    padding-top: 1em;
-    color: rgba(0, 128, 0, 0.5);
-    cursor: pointer;
-  }
-</style>
