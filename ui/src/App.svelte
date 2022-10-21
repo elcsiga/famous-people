@@ -1,11 +1,18 @@
-<script lang="ts">
+<script>
+  import { Alert } from "flowbite-svelte";
   import { gameReport } from "./game/state";
   import Gathering from "./views/Gathering.svelte";
-  import { Moon } from "svelte-loading-spinners";
   import Grouping from "./views/Grouping.svelte";
   import Quiz from "./views/Quiz.svelte";
   import Results from "./views/Results.svelte";
 </script>
+
+<div class="p-8">
+  <Alert>
+    <span class="font-medium">Info alert!</span> Change a few things up and try submitting
+    again.
+  </Alert>
+</div>
 
 <main>
   <div class="content">
@@ -18,7 +25,7 @@
     {:else if $gameReport && $gameReport.status === "RESULTS"}
       <Results />
     {:else}
-      <Moon size="60" color="#FF3E00" unit="px" duration="1s" />
+      loading...
     {/if}
   </div>
 </main>

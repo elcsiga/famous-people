@@ -12,7 +12,7 @@
     mySheets.push('');
   };
 
-  let timer: any;
+  let timer;
   const onChange = () => {
     clearTimeout(timer);
     timer = setTimeout(() => {
