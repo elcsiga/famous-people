@@ -1,4 +1,3 @@
-import { WebsocketMethod } from "express-ws";
 export interface Player {
     name: string;
     sheets: string[];

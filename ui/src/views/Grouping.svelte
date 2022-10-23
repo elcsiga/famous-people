@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { ClearGroupsCommand, GoToGatheringCommand, GoToQuizCommand, ShuffleGroupsCommand } from "../shared/types";
   import Pawn from "../compnents/Pawn.svelte";
-  import { gameReport, send, me } from "../game/state";
-  import { areGroupsSetUp, numOfValidSheets } from "../shared/utilities";
+  import { gameReport, send } from "../game/state";
+  import { areGroupsSetUp } from "../shared/utilities";
 
   function shuffleGroups() {
     send<ShuffleGroupsCommand>({

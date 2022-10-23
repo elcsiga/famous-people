@@ -13,7 +13,7 @@ export function send<T>(data: T) {
 }
 
 export const gameReport = readable<GameReport>(null, (set) => {
-    const url = window.location.hostname === 'localhost'
+    const url = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? `ws://localhost:3000/ws`
         : `wss://${window.location.host}/ws`
 

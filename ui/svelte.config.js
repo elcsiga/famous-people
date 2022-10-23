@@ -1,14 +1,11 @@
-import preprocess from "svelte-preprocess";
+import sveltePreprocess from "svelte-preprocess";
 
-const config = {
+export default {
+  // Consult https://github.com/sveltejs/svelte-preprocess
+  // for more information about preprocessors
   preprocess: [
-    preprocess({
-      sourceMap: !production,
-      postcss: {
-        plugins: [require('autoprefixer')()]
-      }
+    sveltePreprocess({
+      postcss: true,
     }),
   ],
 };
-
-export default config;

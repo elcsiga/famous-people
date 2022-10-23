@@ -25,7 +25,8 @@ export const clearGroups = (players: Player[]) => {
 ////////
 
 function shuffle(array: any[]) {
-  let currentIndex = array.length, randomIndex;
+  let currentIndex = array.length;
+  let randomIndex: number;
 
   // While there remain elements to shuffle.
   while (currentIndex != 0) {
