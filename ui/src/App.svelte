@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { Alert } from "flowbite-svelte";
   import { gameReport } from "./game/state";
   import Gathering from "./views/Gathering.svelte";
