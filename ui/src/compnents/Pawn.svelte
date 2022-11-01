@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card } from "flowbite-svelte";
+  import { Avatar } from "flowbite-svelte";
   import { gameConfig, colors } from "../shared/config";
   import type { Player, PlayerReport } from "../shared/types";
   import { me } from "../game/state";
@@ -10,17 +10,22 @@
   export let player: PlayerReport = null;
 </script>
 
-<Card href="/cards">
-  <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-    {player.name} {$me === player ? '(Myself)' : ''}
-  </h5>
-  <p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-    #{player.ord} -
-    {#if !player.connected}
-      not connected
-    {:else if isReady(player)}
-      ready
-    {:else}
-      writing...
-    {/if}
-</Card>
+<div class="flex items-center space-x-4">
+  <Avatar dot={player.ord >= 0 && {color:"bg-"+colors[getGroup(player)]+"-500"}}/>
+  <div class="text-left space-y-1 font-medium dark:text-white">
+      <div>{player.name} </div>
+      <div class="text-sm text-gray-500 dark:text-gray-400">
+        {$me === player ? '(Myself)' : ''}
+        {colors[getGroup(player)]}
+        {getGroup(player)}
+        #{player.ord} -
+        {#if !player.connected}
+          not connected
+        {:else if isReady(player)}
+          ready
+        {:else}
+          writing...
+        {/if}
+      </div>
+  </div>
+</div>

@@ -16,4 +16,4 @@ export const gameConfig = {
     }
 }
 
-export const colors: string[] = ['green', 'blue', 'orange', 'red', 'black', 'white', 'yellow', 'purple'];
+export const colors: string[] = ['green', 'red', 'sky', 'black', 'orange', 'white', 'yellow'];

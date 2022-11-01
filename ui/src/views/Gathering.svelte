@@ -11,6 +11,8 @@
   import { gameReport, send, me } from "../game/state";
   import WriteSheets from "../compnents/WriteSheets.svelte";
   import { areSheetsReady, numOfValidSheets } from "../shared/utilities";
+  import { Alert, Button } from "flowbite-svelte";
+
 
   const { min, max } = gameConfig.numOfPlayers;
 
@@ -50,7 +52,7 @@
 
 <h1>Gyülekező</h1>
 
-<section class="qr">
+<section>
   <QrCode text={window.location.href} />
 </section>
 
@@ -62,7 +64,7 @@
 
 <section>
   {#if $me}
-    <button class="link" on:click={quit}> Mégsem játszom</button>
+    <Button class="link" on:click={quit}> Mégsem játszom</Button>
   {/if}
 </section>
 
@@ -72,19 +74,18 @@
   </section>
 {/if}
 
-<section>
+<Alert>
   <p>A játékot {min}-{max} játékos játszhatja.</p>
 
   {#if !$me && $gameReport.players.length < max}
-    <button on:click={apply}> Játszom én is! </button>
+    <Button on:click={apply}> Játszom én is! </Button>
   {/if}
-</section>
+</Alert>
 
-<section>
-  <p>
+  <Alert>
     Eddig bedobott kártyák száma:
     {$gameReport.players.reduce((n, player) => n + numOfValidSheets(player), 0)}
-  </p>
+  </Alert>
 
   {#if $gameReport.players.length >= min && $gameReport.players.length <= max}
     {#if $gameReport.players.every((player) => player.connected && areSheetsReady(player))}
@@ -94,15 +95,13 @@
       </p>
     {/if}
   {/if}
-</section>
 
-<section>
   {#if !$gameReport.players.every((player) => player.connected)}
-    <p>
+    <Alert>
       Úgy tűnik valaki nem elérhető.
-      <button class="link" on:click={quitNotConnectedPlayers}>
+      <Button on:click={quitNotConnectedPlayers}>
         Kiléptetem őket.
-      </button>
-    </p>
+      </Button>
+    </Alert>
   {/if}
-</section>
+
